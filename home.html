@@ -73,7 +73,9 @@ animate();
 
 // CS148: my_animate is where your robot's controls and movement are updated over time
 function my_init() {
-
+	
+	height = 2;
+	
     init_robot();  // initialize robot kinematics
 
     // CS148: INITIAL GETTING FAMILIAR CODE  (START HERE)
@@ -115,7 +117,6 @@ function my_init() {
     // CS148: INITIAL GETTING FAMILIAR CODE  (END HERE)
 
 }
-
 
 function init_robot() {
         
@@ -176,65 +177,108 @@ function init_robot_joints() {
 /////     ANIMATION AND INTERACTION LOOP
 //////////////////////////////////////////////////
 
+function move_up()
+{
+// iterate over each joint of the robot independently
+for (x in robot.joints) {
+
+    // jsmat[1][3] corresponds to the y-coordinate of the position for the 3D object
+    jsmat[1][3] = height;  // Math object has lots of helpful functions
+
+    // jsmat[2][3] corresponds to the z-coordinate of the position for the 3D object
+    jsmat[2][3] = 0;
+
+    // convert 2D JavaScript array to the threejs format
+    threemat = matrix_2Darray_to_threejs(jsmat); 
+
+    // transform 
+    simpleApplyMatrix(robot.joints[x].geom,threemat);
+
+    jsmat[0][3] += spacing;
+}
+
+// iterate over each link of the robot independently
+jsmat[0][3] = -Object.keys(robot.joints).length*spacing/2;
+for (x in robot.links) {
+    jsmat[1][3] = 1;
+    jsmat[2][3] = 0;
+    threemat = matrix_2Darray_to_threejs(jsmat);
+    simpleApplyMatrix(robot.links[x].geom,threemat);
+    jsmat[0][3] += spacing;
+}
+
+counter();
+}
+
+function counter()
+{
+	height += 0.01;
+}
+
+function jitter()
+{
+// iterate over each joint of the robot independently
+for (x in robot.joints) {
+
+    // jsmat[1][3] corresponds to the y-coordinate of the position for the 3D object
+    jsmat[1][3] = height+Math.random()*0.02;  // Math object has lots of helpful functions
+
+    // jsmat[2][3] corresponds to the z-coordinate of the position for the 3D object
+    jsmat[2][3] = Math.random()*0.02;
+
+    // convert 2D JavaScript array to the threejs format
+    threemat = matrix_2Darray_to_threejs(jsmat); 
+
+    // transform 
+    simpleApplyMatrix(robot.joints[x].geom,threemat);
+
+    jsmat[0][3] += spacing;
+}
+
+// iterate over each link of the robot independently
+jsmat[0][3] = -Object.keys(robot.joints).length*spacing/2;
+for (x in robot.links) {
+    jsmat[1][3] = 1+Math.random()*0.02;
+    jsmat[2][3] = Math.random()*0.02;
+    threemat = matrix_2Darray_to_threejs(jsmat);
+    simpleApplyMatrix(robot.links[x].geom,threemat);
+    jsmat[0][3] += spacing;
+}
+}
+
 // CS148: my_animate is where your robot's controls and movement are updated over time
 function my_animate() {
-
+	
     // CS148: INITIAL GETTING FAMILIAR CODE  (START HERE)
 
+	// jsmat will be used to transform a 3D object to a specific location in the world
+	// we will represent matrices with index notation 
+	//   such that matrix[row][column] is the indexing
+	jsmat = [
+	            [1, 0, 0, 0],
+	            [0, 1, 0, 0],
+	            [0, 0, 1, 0],
+	            [0, 0, 0, 1] 
+	];
+
+	spacing = 0.9;  // variables declared with "var" are local 
+
+	// jsmat[0][3] corresponds to the x-coordinate of the position for the 3D object
+	// Object.key(object) is a rough way to get number of keys in an object
+	jsmat[0][3] = -Object.keys(robot.joints).length*spacing/2;
+
     // keyboard is threejs helper for reading keyboard state
-    if (keyboard.pressed("x")) 
+    if (keyboard.pressed("x")) {
         textbar.innerHTML = "moving up";  // make the pieces move up
-    else if (keyboard.pressed("z")) 
+		move_up();
+	}
+    else if (keyboard.pressed("z")) {
         textbar.innerHTML = "zzzzzz";  // stop jittering the pieces
+	}
     else {
-        // make the pieces jitter, and say something interesting
-    }
-
-    // jsmat will be used to transform a 3D object to a specific location in the world
-    // we will represent matrices with index notation 
-    //   such that matrix[row][column] is the indexing
-    var jsmat = [
-                [1, 0, 0, 0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1] 
-    ];
-
-    var spacing = 0.9;  // variables declared with "var" are local 
-
-    // jsmat[0][3] corresponds to the x-coordinate of the position for the 3D object
-    // Object.key(object) is a rough way to get number of keys in an object
-    jsmat[0][3] = -Object.keys(robot.joints).length*spacing/2;  
-
-
-    // iterate over each joint of the robot independently
-    for (x in robot.joints) {
-
-        // jsmat[1][3] corresponds to the y-coordinate of the position for the 3D object
-        jsmat[1][3] = 2+Math.random()*0.02;  // Math object has lots of helpful functions
-
-        // jsmat[2][3] corresponds to the z-coordinate of the position for the 3D object
-        jsmat[2][3] = Math.random()*0.02;
-
-        // convert 2D JavaScript array to the threejs format
-        threemat = matrix_2Darray_to_threejs(jsmat); 
-
-        // transform 
-        simpleApplyMatrix(robot.joints[x].geom,threemat);
-
-        jsmat[0][3] += spacing;
-    } 
-
-    // iterate over each link of the robot independently
-    jsmat[0][3] = -Object.keys(robot.joints).length*spacing/2;
-    for (x in robot.links) {
-        jsmat[1][3] = 1+Math.random()*0.02;
-        jsmat[2][3] = Math.random()*0.02;
-        threemat = matrix_2Darray_to_threejs(jsmat);
-        simpleApplyMatrix(robot.links[x].geom,threemat);
-        jsmat[0][3] += spacing;
-    } 
-
+		textbar.innerHTML = "something interesting";  // make the pieces jitter, and say something interesting
+		jitter();
+	}
 
     // CS148: INITIAL GETTING FAMILIAR CODE  (END)
 
@@ -280,9 +324,6 @@ function my_animate() {
 
 }
 
-
-
 </script>
 </body>
 </html>
-
